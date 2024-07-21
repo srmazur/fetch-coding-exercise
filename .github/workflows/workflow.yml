@@ -1,0 +1,68 @@
+name: find_the_bar
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      selenium-hub:
+        image: selenium/hub:4.21.0
+        ports:
+          - 4445:4444
+
+      chrome:
+        image: selenium/node-chrome:4.21.0
+        options: >-
+          --network-alias chrome
+          --env HUB_HOST=selenium-hub
+          --env SE_EVENT_BUS_HOST=selenium-hub
+          --env SE_EVENT_BUS_PUBLISH_PORT=4442
+          --env SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+        volumes:
+          - /dev/shm:/dev/shm
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: set-up jdk
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: build docker image
+        run: docker build -t fetch-coding-exercise .
+
+      - name: run compose up
+        run: |
+          echo "HUB_URL=http://localhost:4445/wd/hub" >> $GITHUB_ENV
+          docker-compose up --abort-on-container-exit --build
+
+      - name: copy screenshots to artifact
+        if: success()
+        run: |
+          mkdir -p ./result
+          docker cp $(docker-compose ps -q test-runner):/fetch-coding-exercise/test-output ./fetch-coding-exercise
+
+      - name: copy report to artifact
+        if: success()
+        run: |
+          docker cp $(docker-compose ps -q test-runner):/fetch-coding-exercise/local-test-reports/test-reports ./fetch-coding-exercise
+
+      - name: hotfix don't judge
+        if: success()
+        run: |
+          rm -rf ./local-test-reports/test-reports/junitreports
+          rm -rf ./local-test-reports/test-reports/old
+          rm -rf ./local-test-reports/test-reports/Suite
+
+      - name: upload outcome
+        uses: actions/upload-artifact@v4
+        with:
+          name: fetch-coding-exercise
+          path: ./fetch-coding-exercise
+          retention-days: 1
