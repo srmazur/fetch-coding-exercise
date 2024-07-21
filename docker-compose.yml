@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  selenium-hub:
+    image: selenium/hub:4.21.0
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    platform: linux/amd64
+
+  chrome:
+    image: selenium/node-chrome:4.21.0
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+      - "7900:7900"
+    volumes:
+      - /dev/shm:/dev/shm
+    platform: linux/amd64
+
+  test-runner:
+    build:
+      context: .
+    depends_on:
+      - selenium-hub
+      - chrome
+    environment:
+      - HOST_NAME=selenium-hub
+    volumes:
+      - ./test-output:/fetch-coding-exercise/test-output
+      - ./test-reports:/fetch-coding-exercise/local-test-reports
