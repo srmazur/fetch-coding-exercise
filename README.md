@@ -111,4 +111,4 @@ mvn test
 - `./fetch-coding-exercise/target/test-reports/index.html`: Contains the simple TestNG report.
 
 
-### NOTE: It is also possible to run the process locally using a Selenium Grid setup.
+### NOTE: It is also possible to run the process locally using a Selenium Grid setup. You can also check out the demo video to visualize the flow of the process.
