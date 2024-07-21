@@ -6,24 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    services:
-      selenium-hub:
-        image: selenium/hub:4.21.0
-        ports:
-          - 4445:4444
-
-      chrome:
-        image: selenium/node-chrome:4.21.0
-        options: >-
-          --network-alias chrome
-          --env HUB_HOST=selenium-hub
-          --env SE_EVENT_BUS_HOST=selenium-hub
-          --env SE_EVENT_BUS_PUBLISH_PORT=4442
-          --env SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-        volumes:
-          - /dev/shm:/dev/shm
-
+    
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
